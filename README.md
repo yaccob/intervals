@@ -45,29 +45,26 @@ extending (implementing) the `Comparable` interface.
     ... where `Interval` will look more or less like this:
   
     ```java
-    public final class Interval<T extends Comparable<T>> implements Comparable<Interval<T>> {
+    public final class Interval<T extends Comparable<T>> implements Comparable<T> {
         private T first;
         private T last;
-    
+        
         public Interval(T first, T last) {
             this.first = first;
             this.last = last;
         }
-    
+        
         public T getFirst() {
             return first;
         }
-    
+        
         public T getLast() {
             return last;
         }
-    
+        
         @Override
-        public int compareTo(Interval other) {
-            return ComparisonChain.start()
-                    .compare(this.first, other.first)
-                    .compare(this.last, other.last)
-                    .result();
+        public int compareTo(@NotNull T o) {
+            return first.compareTo(last);
         }
     }
     ```
@@ -142,7 +139,7 @@ extending (implementing) the `Comparable` interface.
       
       In a real-world scenario I now have two options regarding how to proceed:
       
-      * Either I clarify this in advance by asking the stakeholders if they have a strong preference for any speficication.
+      * Either I clarify this in advance by asking the stakeholders if they have a strong preference for any specification.
             
       * Or I find which option is most preferable from implementation (and/or -performance) point of view
         and suggest that option to the stakeholder, reasoning why this would be the "better" option.
@@ -150,4 +147,11 @@ extending (implementing) the `Comparable` interface.
         * In that case I could implement unit tests for both options by using JUnit *assumptions* (`Assume.assumeThat(...)`).
       
       Since I'm in a demo-scenario where I just want to save effort, I'll initially avoid testing these edge-cases until I know how it works best,
-      and afterwards add according tests to address regression issues. 
+      and afterwards add according tests to address regression issues.
+      
+      *Update*: thinking more about merging `[a,b][b,c]` to `[a,c]` it now seems quite clear to me
+      that these intervals definitely should be merged for the following reason:  
+      Regardless if the upper bound of the lower interval (`[a,b]`) is inclusive or exclusive
+      there is not single value `>= a <c` that doesn't fall into either of the intervals. 
+      Assuming that the intention of joining intervals is to cover values with the least possible amount of intervals
+      not joining them wouldn't make sense.

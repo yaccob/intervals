@@ -1,4 +1,4 @@
-package net.yaccob.intervals;
+package net.yaccob.intervals.api;
 
 import java.util.List;
 
