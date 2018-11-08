@@ -1,6 +1,8 @@
 package net.yaccob.intervals;
 
-public final class Interval<T extends Comparable<T>> implements Comparable<T> {
+import com.google.common.collect.ComparisonChain;
+
+public final class Interval<T extends Comparable<T>> implements Comparable<Interval<T>> {
     private T first;
     private T last;
 
@@ -18,7 +20,10 @@ public final class Interval<T extends Comparable<T>> implements Comparable<T> {
     }
 
     @Override
-    public int compareTo(T o) {
-        return first.compareTo(last);
+    public int compareTo(Interval other) {
+        return ComparisonChain.start()
+                .compare(this.first, other.first)
+                .compare(this.last, other.last)
+                .result();
     }
 }
