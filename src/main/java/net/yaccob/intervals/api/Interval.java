@@ -1,10 +1,14 @@
 package net.yaccob.intervals.api;
 
+import com.google.common.base.MoreObjects;
+import com.google.common.base.Preconditions;
 import com.google.common.collect.ComparisonChain;
 
+import java.util.Objects;
+
 public final class Interval<T extends Comparable<T>> implements Comparable<Interval<T>> {
-    private T first;
-    private T last;
+    private final T first;
+    private final T last;
 
     /**
      * Construct an interval with lower value as <code>first</code> and higher value as <code>last</code>
@@ -30,16 +34,15 @@ public final class Interval<T extends Comparable<T>> implements Comparable<Inter
         return last;
     }
 
-    @Override
-    public int compareTo(Interval other) {
-        return ComparisonChain.start()
-                .compare(this.first, other.first)
-                .compare(this.last, other.last)
-                .result();
+    public boolean overlapsWith(Interval<T> other) {
+        return this.last.compareTo(other.first) >= 0;
     }
 
-    public boolean overlapsWith(Interval<T> other) {
-        throw new UnsupportedOperationException("Not yet implemented");
+    public Interval<T> mergeWith(Interval<T> other) {
+        Preconditions.checkArgument(this.overlapsWith(other));
+        T first = this.first.compareTo(other.first) <= 0 ? this.first : other.first;
+        T last = this.last.compareTo(other.last) >= 0 ? this.last : other.last;
+        return new Interval<>(first, last);
     }
 
     /**
@@ -51,10 +54,36 @@ public final class Interval<T extends Comparable<T>> implements Comparable<Inter
      * @return <code>true</code> if the value is covered by this interval, otherwise <code>false</code>.
      */
     public boolean covers(T value) {
-        throw new UnsupportedOperationException("Not yet implemented");
+        return value.compareTo(this.first) >= 0 && value.compareTo(this.last) < 0;
     }
 
-    public Interval<T> mergeWith(Interval<T> other) {
-        throw new UnsupportedOperationException("Not yet implemented");
+    @Override
+    public int compareTo(Interval<T> other) {
+        return ComparisonChain.start()
+                .compare(this.first, other.first)
+                .compare(this.last, other.last)
+                .result();
+    }
+
+    @Override
+    public String toString() {
+        return MoreObjects.toStringHelper(this)
+                .add("first", first)
+                .add("last", last)
+                .toString();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Interval<?> interval = (Interval<?>) o;
+        return Objects.equals(first, interval.first) &&
+                Objects.equals(last, interval.last);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(first, last);
     }
 }

@@ -155,3 +155,32 @@ extending (implementing) the `Comparable` interface.
       there is not single value `>= a <c` that doesn't fall into either of the intervals. 
       Assuming that the intention of joining intervals is to cover values with the least possible amount of intervals
       not joining them wouldn't make sense.
+      
+* When starting to think closer about the QuickSort-like implementation I found 
+  that this is quite complex to implement. 
+  
+  So I'll go for a two-step approach: first sort then merge. 
+  This looks a bit less elegant but seems to be much easier to implement. 
+  Performance-wise it's probably close to (or even better than)the one-step approach, because existing 
+  sorting algorithms are usually highly optimized. 
+  
+  I'll create a sorted set of the input list, then iterate over it (in ascending order) 
+  and either update the latest element of the result list or append a new one.
+  
+* It turned out that this implementation is incredibly simple. And it seems to work like charm.
+
+## Next Steps
+
+(...without knowing if I'll ever implement them...)
+
+* Introduce a size-limit for the input list. 
+
+  The memory consumption for the current implementation (SimpleMerger) is quite high:
+  
+  * The input-list provided by the client is copied to a sorted set
+  * The result list also consumes memory - if not too many intervals can be merged
+    this will be significant as well.
+    
+* Verify that splitting the input list, 
+  processing each sublist separately and merging the results actually works as I expect.
+  This would just require some further relatively simple unit-tests. 
