@@ -63,7 +63,7 @@ extending (implementing) the `Comparable` interface.
         }
         
         @Override
-        public int compareTo(@NotNull T o) {
+        public int compareTo(T o) {
             return first.compareTo(last);
         }
     }
