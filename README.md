@@ -185,6 +185,24 @@ extending (implementing) the `Comparable` interface.
 
   Since the input data is owned by the client I'm not adding it to space considerations
   for the algorithm.
+  
+* The current solution intentionally focuses on readability, testability and maintainability rather than
+  focusing on performance. Using array of primitives (e.g. `int[]`) instead of polymorphic
+  java classes might significantly improve performance. 
+  
+  The beauty of the current solution lays in the fact that almost every detail 
+  can be tested in isolation
+  
+* The test code uses the junit4 feature of parameterized tests. In my opinion apart from
+  reducing amount of code this also significantly increases readability. 
+  Just looking at the data returned by `getScenarios` provides you almost all relevant
+  information in one place. 
+  
+  A downside of this approach is that you need multiple test classes for testing a single class,
+  which is a bit unusual. 
+  
+  JUnit5 has a better feature that allows parameterizing more fine-grained, but as far as I remember
+  this feature is still documented as being experimental. 
 
 ## Next Steps
 
@@ -198,6 +216,12 @@ extending (implementing) the `Comparable` interface.
   * The result list also consumes memory - if not too many intervals can be merged
     this will be significant as well.
     
+* Stress-test the solution. In particular I'd be interested in the following findings:
+  * What value for the size limit makes sense for a service instance on a particular platform 
+  (e.g. an EC2 instance with particular sizing)
+  * What's the actual overhead of the quite generic solution that operates on high-level java objects
+  rather than plain arrays of primitives.  
+
 * Verify that splitting the input list, 
   processing each sublist separately and merging the results actually works as I expect.
   This would just require some further relatively simple unit-tests. 

@@ -55,6 +55,16 @@ public class MergerTestBase {
         private final List<Interval<Integer>> input;
         private final List<Interval<Integer>> output;
 
+        /**
+         * This weird constructor supports a much more compact instantiation of intervals (just static initialization
+         * of a 2-dimensional array instead of instantiating every single interval with `new Interval`.
+         * In my opinion this significantly improves readability by reducing noise.
+         * The downside of being less type-safe doesn't matter that much
+         * because it serves just for this test class - there are no external clients.
+         *
+         * @param input  List of pairs of Integers serving as input.
+         * @param output List of pairs of Integers indicating the expected output.
+         */
         Scenario(List<Integer[]> input, List<Integer[]> output) {
             this.input = input.stream().map(a -> new Interval<>(a[0], a[1])).collect(Collectors.toList());
             this.output = output.stream().map(a -> new Interval<>(a[0], a[1])).collect(Collectors.toList());
