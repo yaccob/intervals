@@ -169,6 +169,19 @@ extending (implementing) the `Comparable` interface.
   
 * It turned out that this implementation is incredibly simple. And it seems to work like charm.
 
+## Remarks
+
+* The time complexity of the implemented algorithm should be 
+  * `O(log(n))` for inserting into the sorted set (a balanced binary tree)
+  * plus `O(n)` for iterating the sorted set and inserting results
+  
+* The space complexity should be
+  * `O(n)` for the sorted set
+  * plus `O(n)` (worst case, if nothing can be merged) for the result list.
+
+  Since the input data is owned by the client I'm not adding it to space considerations
+  for the algorithm.
+
 ## Next Steps
 
 (...without knowing if I'll ever implement them...)
