@@ -45,7 +45,7 @@ extending (implementing) the `Comparable` interface.
     ... where `Interval` will look more or less like this:
   
     ```java
-    public final class Interval<T extends Comparable<T>> implements Comparable<T> {
+    public final class Interval<T extends Comparable<T>> implements Comparable<Interval<T>> {
         private T first;
         private T last;
         
@@ -63,9 +63,13 @@ extending (implementing) the `Comparable` interface.
         }
         
         @Override
-        public int compareTo(T o) {
-            return first.compareTo(last);
+        public int compareTo(Interval<T> other) {
+            return ComparisonChain.start()
+                    .compare(this.first, other.first)
+                    .compare(this.last, other.last)
+                    .result();
         }
+    
     }
     ```
 *   Well, thinking in Java the sample actually suggests a slightly different public API.
