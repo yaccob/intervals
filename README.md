@@ -239,21 +239,6 @@ After some initial ideas that I discarded I got one that looks promising so far:
 
 ### Idea 1
 
-#### Conditions
-
-* Intervals are boundaries for discrete values - e.g. integers. 
-  So any interval specifies a countable set of values. 
-
-* Relatively small amount of discrete values within the *range*.
-  By *range* I mean everything enclosed between the lowest lower bound and the highest upper bound.
-  By relatively small amount I mean relatively small compared to the number of intervals.
-  Ideally the number of values covered by intervals is less then or equal to the numbers of intervals.
-  Otherwise we would talk about a different `n` when comparing complexity to `O(n*log(n))`
-  of the previous solution.  
-  
-  In the previous solution `n` was the number of intervals.  
-  In this solution `n` would be the number of discrete values within the range - so the cardinality of the range. 
-  
 #### Approach
 
 We could map all possible values within the range as array indices. 
@@ -273,11 +258,41 @@ Every first bit indicates if this value is used as a lower bound, every 2nd bit 
 Whenever a bit is set, the count of occurrences in a HashMap entry (with the index as a key) is incremented.
 This way we safe a lot of memory, especially if there are relatively few relatively big ranges.
 
-I implemented it like this and it looks like a quite efficient and elegant solution.
+I implemented it like this and it looks like a quite efficient and elegant solution for some cases.
 
+#### Conditions
+
+* Intervals are boundaries for discrete values - e.g. integers. 
+  So any interval specifies a countable set of values. 
+
+* Relatively small amount of discrete values within the *range*.
+  By *range* I mean everything enclosed between the lowest lower bound and the highest upper bound.
+  By relatively small amount I mean relatively small compared to the number of intervals.
+  Ideally the number of values covered by intervals is less then or equal to the numbers of intervals.
+  Otherwise we would talk about a different `n` when comparing complexity to `O(n*log(n))`
+  of the previous solution.  
+  
+  In the previous solution `n` was the number of intervals.  
+  In this solution `n` would be the number of discrete values within the range - so the cardinality of the range.
+  
+  Eventually it boils down to:
+  
+  * Whenever the range covers more than `numberOfIntervals * log(numberOfIntervals)` discrete values
+    it won't make any sense to use a solution with a complexity of `O(numberOfDiscreteValuesWithinRange)` 
+  
 #### TODO
 
 Consider a dynamic offset solution for the BitSet (see comments in code).
 
 Consider to improve readability and maintainability by implementing a utility class
 for BitSet and HashMap handling. 
+
+#### Summary
+
+Although I like this solution from coding perspective (smart, compact, optimized)
+I would't recommend it form architecture perspective. 
+It's optimized for the cost of significant loss of flexibility. Furthermore in many cases it will
+perform worse than the generic solution I provided before. 
+
+In a real-world project I'd rather invest in scaling the generic solution 
+than in optimizing for special cases (unless these special cases are our main target).
