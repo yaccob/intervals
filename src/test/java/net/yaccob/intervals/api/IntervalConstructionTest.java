@@ -26,12 +26,12 @@ public class IntervalConstructionTest {
 
     @Test
     public void testFirst() {
-        Assertions.assertThat(scenario.interval.getFirst()).isEqualTo(scenario.getExpectedFirst());
+        Assertions.assertThat(scenario.interval.getLowerBoundInclusive()).isEqualTo(scenario.getExpectedFirst());
     }
 
     @Test
     public void testLast() {
-        Assertions.assertThat(scenario.interval.getLast()).isEqualTo(scenario.getExpectedLast());
+        Assertions.assertThat(scenario.interval.getUpperBoundExclusive()).isEqualTo(scenario.getExpectedLast());
     }
 
     private static class Scenario {

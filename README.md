@@ -46,27 +46,27 @@ extending (implementing) the `Comparable` interface.
   
     ```java
     public final class Interval<T extends Comparable<T>> implements Comparable<Interval<T>> {
-        private T first;
-        private T last;
+        private T lowerBoundInclusive;
+        private T upperBoundExclusive;
         
-        public Interval(T first, T last) {
-            this.first = first;
-            this.last = last;
+        public Interval(T lowerBoundInclusive, T upperBoundExclusive) {
+            this.lowerBoundInclusive = lowerBoundInclusive;
+            this.upperBoundExclusive = upperBoundExclusive;
         }
         
         public T getFirst() {
-            return first;
+            return lowerBoundInclusive;
         }
         
         public T getLast() {
-            return last;
+            return upperBoundExclusive;
         }
         
         @Override
         public int compareTo(Interval<T> other) {
             return ComparisonChain.start()
-                    .compare(this.first, other.first)
-                    .compare(this.last, other.last)
+                    .compare(this.lowerBoundInclusive, other.lowerBoundInclusive)
+                    .compare(this.upperBoundExclusive, other.upperBoundExclusive)
                     .result();
         }
     
@@ -135,7 +135,7 @@ extending (implementing) the `Comparable` interface.
   
   This raises some questions in advance:
   
-    * Neither the requirement description nor the sample indicate if `first` or `last` value of an interval are inclusive or  exclusive.
+    * Neither the requirement description nor the sample indicate if `lowerBoundInclusive` or `upperBoundExclusive` value of an interval are inclusive or  exclusive.
 
       For example:
   
@@ -163,7 +163,7 @@ extending (implementing) the `Comparable` interface.
 * When starting to think closer about the QuickSort-like implementation I found 
   that this is quite complex to implement. 
   
-  So I'll go for a two-step approach: first sort then merge. 
+  So I'll go for a two-step approach: lowerBoundInclusive sort then merge. 
   This looks a bit less elegant but seems to be much easier to implement. 
   Performance-wise it's probably close to (or even better than)the one-step approach, because existing 
   sorting algorithms are usually highly optimized. 
@@ -225,3 +225,59 @@ extending (implementing) the `Comparable` interface.
 * Verify that splitting the input list, 
   processing each sublist separately and merging the results actually works as I expect.
   This would just require some further relatively simple unit-tests. 
+
+# Bonus Task
+
+Under certain conditions the problem can be solved in O(n).
+How does this work and what are the conditions?
+
+A solution should be found for a non-sorted interval list as input. 
+
+## Ideas
+
+After some initial ideas that I discarded I got one that looks promising so far:
+
+### Idea 1
+
+#### Conditions
+
+* Intervals are boundaries for discrete values - e.g. integers. 
+  So any interval specifies a countable set of values. 
+
+* Relatively small amount of discrete values within the *range*.
+  By *range* I mean everything enclosed between the lowest lower bound and the highest upper bound.
+  By relatively small amount I mean relatively small compared to the number of intervals.
+  Ideally the number of values covered by intervals is less then or equal to the numbers of intervals.
+  Otherwise we would talk about a different `n` when comparing complexity to `O(n*log(n))`
+  of the previous solution.  
+  
+  In the previous solution `n` was the number of intervals.  
+  In this solution `n` would be the number of discrete values within the range - so the cardinality of the range. 
+  
+#### Approach
+
+We could map all possible values within the range as array indices. 
+Any value that is referred by an interval bound (lower or upper) would be represented 
+by a record in the array (or ArrayList), whose index is the bound. A record could look like this:
+```java
+class BoundInfo {
+    int lowerBoundOccurrencesCount;
+    int upperBoundOccurrencesCount;
+}
+```
+
+This would consume quite a lot of memory - even for the lot of array elements that are actually unused.
+
+Therefore I go for a `BitSet`, using 2 bits for every discrete value within the range.
+Every first bit indicates if this value is used as a lower bound, every 2nd bit indicates if it is used as an upper bound. 
+Whenever a bit is set, the count of occurrences in a HashMap entry (with the index as a key) is incremented.
+This way we safe a lot of memory, especially if there are relatively few relatively big ranges.
+
+I implemented it like this and it looks like a quite efficient and elegant solution.
+
+#### TODO
+
+Consider a dynamic offset solution for the BitSet (see comments in code).
+
+Consider to improve readability and maintainability by implementing a utility class
+for BitSet and HashMap handling. 

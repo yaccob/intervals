@@ -10,12 +10,12 @@ import java.util.TreeSet;
 public class SimpleMerger<T extends Comparable<T>> implements net.yaccob.intervals.api.IntervalMerger<T> {
 
     @Override
-    public List<Interval<T>> merge(List<Interval<T>> list) {
+    public List<Interval<T>> merge(List<Interval<T>> intervals) {
 
         // Since the input parameter (owned by our client) shouldn't be amended, in-place sorting wouldn't make sense.
         // Instead, we create a sorted representation of the original list (using a set to eliminate duplicates)
         // rather than just copying the original for the purpose of not amending it:
-        SortedSet<Interval<T>> sorted = new TreeSet<>(list);
+        SortedSet<Interval<T>> sorted = new TreeSet<>(intervals);
 
         List<Interval<T>> result = new ArrayList<>();
         if (sorted.size() > 0) {

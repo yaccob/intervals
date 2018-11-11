@@ -1,47 +1,46 @@
 package net.yaccob.intervals.api;
 
-import com.google.common.base.MoreObjects;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ComparisonChain;
 
 import java.util.Objects;
 
 public final class Interval<T extends Comparable<T>> implements Comparable<Interval<T>> {
-    private final T first;
-    private final T last;
+    private final T lowerBoundInclusive;
+    private final T upperBoundExclusive;
 
     /**
-     * Construct an interval with lower value as <code>first</code> and higher value as <code>last</code>
+     * Construct an interval with lower value as <code>lowerBoundInclusive</code> and higher value as <code>upperBoundExclusive</code>
      *
-     * @param first One boundary - doesn't matter if lower or higher boundary
-     * @param last  The other boundary
+     * @param oneBound One boundary - doesn't matter if lower or higher boundary
+     * @param otherBound  The other boundary
      */
-    public Interval(T first, T last) {
-        if (first.compareTo(last) <= 0) {
-            this.first = first;
-            this.last = last;
+    public Interval(T oneBound, T otherBound) {
+        if (oneBound.compareTo(otherBound) <= 0) {
+            this.lowerBoundInclusive = oneBound;
+            this.upperBoundExclusive = otherBound;
         } else { // reverse order -> normalize it
-            this.first = last;
-            this.last = first;
+            this.lowerBoundInclusive = otherBound;
+            this.upperBoundExclusive = oneBound;
         }
     }
 
-    public T getFirst() {
-        return first;
+    public T getLowerBoundInclusive() {
+        return lowerBoundInclusive;
     }
 
-    public T getLast() {
-        return last;
+    public T getUpperBoundExclusive() {
+        return upperBoundExclusive;
     }
 
     public boolean overlapsWith(Interval<T> other) {
-        return this.last.compareTo(other.first) >= 0;
+        return this.upperBoundExclusive.compareTo(other.lowerBoundInclusive) >= 0;
     }
 
     public Interval<T> mergeWith(Interval<T> other) {
         Preconditions.checkArgument(this.overlapsWith(other));
-        T first = this.first.compareTo(other.first) <= 0 ? this.first : other.first;
-        T last = this.last.compareTo(other.last) >= 0 ? this.last : other.last;
+        T first = this.lowerBoundInclusive.compareTo(other.lowerBoundInclusive) <= 0 ? this.lowerBoundInclusive : other.lowerBoundInclusive;
+        T last = this.upperBoundExclusive.compareTo(other.upperBoundExclusive) >= 0 ? this.upperBoundExclusive : other.upperBoundExclusive;
         return new Interval<>(first, last);
     }
 
@@ -54,23 +53,20 @@ public final class Interval<T extends Comparable<T>> implements Comparable<Inter
      * @return <code>true</code> if the value is covered by this interval, otherwise <code>false</code>.
      */
     public boolean covers(T value) {
-        return value.compareTo(this.first) >= 0 && value.compareTo(this.last) < 0;
+        return value.compareTo(this.lowerBoundInclusive) >= 0 && value.compareTo(this.upperBoundExclusive) < 0;
     }
 
     @Override
     public int compareTo(Interval<T> other) {
         return ComparisonChain.start()
-                .compare(this.first, other.first)
-                .compare(this.last, other.last)
+                .compare(this.lowerBoundInclusive, other.lowerBoundInclusive)
+                .compare(this.upperBoundExclusive, other.upperBoundExclusive)
                 .result();
     }
 
     @Override
     public String toString() {
-        return MoreObjects.toStringHelper(this)
-                .add("first", first)
-                .add("last", last)
-                .toString();
+        return String.format("[%s..%s]", String.valueOf(lowerBoundInclusive), String.valueOf(upperBoundExclusive));
     }
 
     @Override
@@ -78,12 +74,12 @@ public final class Interval<T extends Comparable<T>> implements Comparable<Inter
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Interval<?> interval = (Interval<?>) o;
-        return Objects.equals(first, interval.first) &&
-                Objects.equals(last, interval.last);
+        return Objects.equals(lowerBoundInclusive, interval.lowerBoundInclusive) &&
+                Objects.equals(upperBoundExclusive, interval.upperBoundExclusive);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(first, last);
+        return Objects.hash(lowerBoundInclusive, upperBoundExclusive);
     }
 }
