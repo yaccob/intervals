@@ -254,9 +254,21 @@ class BoundInfo {
 This would consume quite a lot of memory - even for the lot of array elements that are actually unused.
 
 Therefore I go for a `BitSet`, using 2 bits for every discrete value within the range.
-Every first bit indicates if this value is used as a lower bound, every 2nd bit indicates if it is used as an upper bound. 
+Every even bit indicates if this value is used as a lower bound, every odd bit indicates if it is used as an upper bound. 
 Whenever a bit is set, the count of occurrences in a HashMap entry (with the index as a key) is incremented.
-This way we safe a lot of memory, especially if there are relatively few relatively big ranges.
+This way we safe a lot of memory. It requires up to 96.875% less memory required compared to the above data structure,
+especially if there are relatively few relatively big ranges.
+
+With:
+```java
+class BoundInfo {
+    int lowerBoundOccurrencesCount;
+    int upperBoundOccurrencesCount;
+}
+```
+we need `2 * 32 * cardinality` bits  
+while we need only `2 * 1 * cardinality + 32 * distinctBoundaries` bits for the bitSet solution.
+As you can see the advantage of the bitSet solution decreases with an increasing number of distinct boundaries.  
 
 I implemented it like this and it looks like a quite efficient and elegant solution for some cases.
 
@@ -264,6 +276,10 @@ I implemented it like this and it looks like a quite efficient and elegant solut
 
 * Intervals are boundaries for discrete values - e.g. integers. 
   So any interval specifies a countable set of values. 
+  For anything that's countable but exceeds the range of an `int` (e.g. `long`)
+  the concept would still work but the java solution would become more complex, because 
+  in java integers are the only data type you can use for addressing array indices
+  as well as BitSet indices. 
 
 * Relatively small amount of discrete values within the *range*.
   By *range* I mean everything enclosed between the lowest lower bound and the highest upper bound.
@@ -277,8 +293,8 @@ I implemented it like this and it looks like a quite efficient and elegant solut
   
   Eventually it boils down to:
   
-  * Whenever the range covers more than `numberOfIntervals * log(numberOfIntervals)` discrete values
-    it won't make any sense to use a solution with a complexity of `O(numberOfDiscreteValuesWithinRange)` 
+  * Whenever the cardinality of the range is higher than `numberOfIntervals * log(numberOfIntervals)`
+    it won't make any sense to use a solution with a complexity of `O(cardinality)`. 
   
 #### TODO
 
@@ -294,5 +310,8 @@ I would't recommend it form architecture perspective.
 It's optimized for the cost of significant loss of flexibility. Furthermore in many cases it will
 perform worse than the generic solution I provided before. 
 
-In a real-world project I'd rather invest in scaling the generic solution 
-than in optimizing for special cases (unless these special cases are our main target).
+In a real-world project the use cases behind the requirement would tell us more 
+about what kind of optimization makes sense and what doesn't make sense. 
+
+Without knowing the use case I guess that we might end up investing in a horizontally scaling generic solution 
+rather than optimizing for special cases (unless use cases show us that these special cases are our main target).

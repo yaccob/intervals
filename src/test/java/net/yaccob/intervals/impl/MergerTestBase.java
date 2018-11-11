@@ -57,11 +57,6 @@ public class MergerTestBase {
                         Arrays.asList(new Integer[][]{{0, 2}})
                 ),
                 new Scenario(
-                        "complex one, including first/last irregularities (first > last)",
-                        Arrays.asList(new Integer[][]{{8, 2}, {4, 6}, {7, 3}, {3, 5}, {-2, 1}, {-1, -3}, {0, -4}, {-6, -4}, {-5, -7}, {-8, -7}}),
-                        Arrays.asList(new Integer[][]{{-8, 1}, {2, 8}})
-                ),
-                new Scenario(
                         "filling a gap",
                         Arrays.asList(new Integer[][]{{0, 3}, {4, 7}, {0, 7}}),
                         Arrays.asList(new Integer[][]{{0, 7}})
@@ -70,6 +65,21 @@ public class MergerTestBase {
                         "enclosing two intervals",
                         Arrays.asList(new Integer[][]{{1, 3}, {4, 6}, {0, 7}}),
                         Arrays.asList(new Integer[][]{{0, 7}})
+                ),
+                new Scenario(
+                        "common lower bounds",
+                        Arrays.asList(new Integer[][]{{0, 3}, {0, 7}, {0, 11}}),
+                        Arrays.asList(new Integer[][]{{0, 11}})
+                ),
+                new Scenario(
+                        "common upper bounds",
+                        Arrays.asList(new Integer[][]{{0, 9}, {2, 9}, {5, 9}}),
+                        Arrays.asList(new Integer[][]{{0, 9}})
+                ),
+                new Scenario(
+                        "complex one, including first/last irregularities (first > last)",
+                        Arrays.asList(new Integer[][]{{8, 2}, {4, 6}, {7, 3}, {3, 5}, {-2, 1}, {-1, -3}, {0, -4}, {-6, -4}, {-5, -7}, {-8, -7}}),
+                        Arrays.asList(new Integer[][]{{-8, 1}, {2, 8}})
                 )
         );
     }
@@ -81,7 +91,7 @@ public class MergerTestBase {
 
         /**
          * This weird constructor supports a much more compact instantiation of intervals (just static initialization
-         * of a 2-dimensional array instead of instantiating every single interval with `new Interval`.
+         * of a 2-dimensional array instead of instantiating every single interval with `new Interval`).
          * In my opinion this significantly improves readability by reducing noise.
          * The downside of being less type-safe doesn't matter that much
          * because it serves just for this test class - there are no external clients.
