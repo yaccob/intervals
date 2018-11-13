@@ -298,7 +298,8 @@ I implemented it like this and it looks like a quite efficient and elegant solut
   
 #### TODO
 
-Consider a dynamic offset solution for the BitSet (see comments in code).
+Consider a dynamic offset solution for the BitSet (see comments in code).  
+*Update*: Implemented by pre-scanning all input intervals (additional `O(n)`).
 
 Consider to improve readability and maintainability by implementing a utility class
 for BitSet and HashMap handling. 

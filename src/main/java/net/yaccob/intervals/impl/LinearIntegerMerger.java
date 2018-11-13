@@ -3,8 +3,7 @@ package net.yaccob.intervals.impl;
 import net.yaccob.intervals.api.Interval;
 
 import java.util.*;
-import java.util.function.Supplier;
-import java.util.stream.IntStream;
+import java.util.function.Consumer;
 
 /**
  * Merger that allows merging intervals with O(n) time complexity.
@@ -13,29 +12,51 @@ import java.util.stream.IntStream;
  */
 public class LinearIntegerMerger implements net.yaccob.intervals.api.IntervalMerger<Integer> {
 
-    private final int overallOffset;
+    private final Integer overallOffset;
 
     /**
      * Constructor that supports only positive interval-boundaries.
+     * Merging fails if there is any negative bound.
+     * Memory will be wasted in case of high positive bounds only.
+     * That's why this constructor is private.
      */
-    public LinearIntegerMerger() {
-        this(0);
+    private LinearIntegerMerger() {
+        this(null);
     }
 
     /**
      * Create LinearIntegerMerger that supports negative interval bounds as well.
      * Since BitSet only supports positive integers as index (the same applies to any array),
      * the overallOffset needs to be at least as big as the highest absolute value of all negative boundaries.
-     * <p>
-     * TODO: consider if there is a way to dynamically update the overallOffset while processing input.
-     * If yes, this constructor-overload would become redundant
      *
-     * @param overallOffset Positive overallOffset for negative interval-boundaries, negative overallOffset for saving
-     *                      space and time, if the lowest possible value is quite high (avoiding unused bits between
-     *                      0 and the lowest value covered by any interval).
+     * If the appropriate offset is unknown, use the {@link #fromIntervals(List<Interval<Integer>)} factory method
+     * instead of this constructor. If you do know the appropriate offset in advance, calling this constructor directly
+     * will save one iteration over the input interval list.
+     *
+     * @param overallOffset Negative overallOffset for negative interval-boundaries, positive overallOffset for saving
+     *                      space and time, especially if the lowest possible value is quite high
+     *                      (avoiding unused bits between 0 and the lowest value covered by any interval).
+     *                      Usually the value should be equal to the lowest lower bound of all input intervals.
      */
-    public LinearIntegerMerger(int overallOffset) {
+    public LinearIntegerMerger(Integer overallOffset) {
         this.overallOffset = overallOffset;
+    }
+
+    /**
+     * Factory method for creating a LinearIntegerMerger initialized with the appropriate index offset.
+     *
+     * @param intervals
+     * @return
+     */
+    public static LinearIntegerMerger fromIntervals(List<Interval<Integer>> intervals) {
+        int lowestLowerBound = intervals.stream()
+                .map(Interval::getLowerBoundInclusive)
+                .min(Integer::compareTo)
+                .orElse(Integer.MAX_VALUE);
+        // finally discarded because it would fail for empty interval lists while an empty interval list
+        // can still be correctly merged to another empty interval list:
+        // .orElseThrow(() -> new IllegalArgumentException(String.format("No min value found for %s", intervals)));
+        return new LinearIntegerMerger(lowestLowerBound);
     }
 
     @Override
@@ -47,37 +68,39 @@ public class LinearIntegerMerger implements net.yaccob.intervals.api.IntervalMer
         List<Interval<Integer>> result = new ArrayList<>();
 
         intervals.forEach(interval -> {
-            registerBound(bitSet, lowerBoundsMap, interval::getLowerBoundInclusive, 0);
-            registerBound(bitSet, upperBoundsMap, interval::getUpperBoundExclusive, 1);
+            addBound(bitSet, lowerBoundsMap, interval.getLowerBoundInclusive(), 0);
+            addBound(bitSet, upperBoundsMap, interval.getUpperBoundExclusive(), 1);
         });
 
         Deque<Integer> lowerBoundsStack = new LinkedList<>();
         for (int bitPosition = bitSet.nextSetBit(0); bitPosition >= 0; bitPosition = bitSet.nextSetBit(bitPosition + 1)) {
             if (bitPosition % 2 == 0) { // lower bound bit
-                int position = bitPosition / 2 - overallOffset;
-                Integer count = lowerBoundsMap.get(position);
-                // this inner loop is executed once per interval-definition, so it doesn't make us deviate from O(n)
-                IntStream.range(0, count)
-                        .mapToObj(i -> position)
-                        .forEach(lowerBoundsStack::push);
+                processMapItems(bitPosition, lowerBoundsMap, 0, lowerBoundsStack::push);
             } else { // upper bound bit
-                int position = bitPosition / 2 - overallOffset + 1;
-                Integer count = upperBoundsMap.get(position - 1);
-                // this inner loop is executed once per interval-definition, so it doesn't make us deviate from O(n)
-                IntStream.range(0, count)
-                        .map(i -> lowerBoundsStack.pop())
-                        .filter(first -> lowerBoundsStack.isEmpty())
-                        .mapToObj(first -> new Interval<>(first, position - 1))
-                        .forEach(result::add);
+                processMapItems(bitPosition, upperBoundsMap, 1, pos -> {
+                    int first = lowerBoundsStack.pop();
+                    if (lowerBoundsStack.isEmpty()) {
+                        Interval<Integer> interval = new Interval<>(first, pos - 1);
+                        result.add(interval);
+                    }
+                });
             }
         }
 
         return result;
     }
 
-    private void registerBound(BitSet bitSet, Map<Integer, Integer> boundsMap, Supplier<Integer> bound, int boundOffset) {
-        bitSet.set(((bound.get() + overallOffset) * 2 + boundOffset));
-        boundsMap.put(bound.get(), boundsMap.getOrDefault(bound.get(), 0) + 1);
+    private void processMapItems(int bitPosition, Map<Integer, Integer> boundsMap, int boundOffset, Consumer<Integer> consumer) {
+        int position = bitPosition / 2 + overallOffset + boundOffset;
+        // this inner loop is executed once per interval-definition, so it doesn't make us deviate from O(n)
+        for (int i = 0; i < boundsMap.get(position - boundOffset); i++) {
+            consumer.accept(position);
+        }
+    }
+
+    private void addBound(BitSet bitSet, Map<Integer, Integer> boundsMap, Integer bound, int boundOffset) {
+        bitSet.set(((bound - overallOffset) * 2 + boundOffset));
+        boundsMap.put(bound, boundsMap.getOrDefault(bound, 0) + 1);
     }
 
     @Override

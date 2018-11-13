@@ -19,7 +19,7 @@ public class LinearIntegerMergerTest extends MergerTestBase {
 
     @Before
     public void init() {
-        merger = new LinearIntegerMerger(8);
+        merger = LinearIntegerMerger.fromIntervals(scenario.getInput());
     }
 
     @Test
