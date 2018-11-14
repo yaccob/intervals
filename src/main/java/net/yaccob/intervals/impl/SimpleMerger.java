@@ -34,8 +34,4 @@ public class SimpleMerger<T extends Comparable<T>> implements net.yaccob.interva
         return result;
     }
 
-    @Override
-    public List<T[]> mergePrimitive(List<T[]> intervals) {
-        throw new UnsupportedOperationException("Not yet implemented");
-    }
 }

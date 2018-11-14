@@ -8,8 +8,8 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
 /**
- * Probably in future we'll have more optimized implementations of IntervalMerger.
- * We want to use the same scenarios for all implementations. That's why we extract the test data
+ * While we have different implementations of IntervalMerger,
+ * we want to use the same scenarios for all implementations. That's why we extract the test data
  * to a base class intended to be used by all IntervalMerger implementation tests.
  */
 @RunWith(Parameterized.class)

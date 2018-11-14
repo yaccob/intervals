@@ -8,6 +8,11 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * While we have different implementations of IntervalMerger,
+ * we want to use the same scenarios for all implementations. That's why we extracted the test data
+ * to this base class intended to be used by all IntervalMerger implementation tests.
+ */
 public class MergerTestBase {
 
     @Parameter
@@ -75,6 +80,11 @@ public class MergerTestBase {
                         "common upper bounds",
                         Arrays.asList(new Integer[][]{{0, 9}, {2, 9}, {5, 9}}),
                         Arrays.asList(new Integer[][]{{0, 9}})
+                ),
+                new Scenario(
+                        "big range",
+                        Arrays.asList(new Integer[][]{{-1000000, 1000000}, {-3, 3000000}}),
+                        Arrays.asList(new Integer[][]{{-1000000, 3000000}})
                 ),
                 new Scenario(
                         "complex one, including first/last irregularities (first > last)",
