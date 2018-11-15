@@ -32,8 +32,7 @@ public class AscendingIntStrategyApplicator {
             }
         }
         final int offset = lowestIndex;
-        int bound = elements.size();
-        for (int elementIndex = 0; elementIndex < bound; ++elementIndex) {
+        for (int elementIndex = 0; elementIndex < elements.size(); ++elementIndex) {
             for (int processorIndex = 0; processorIndex < processorsCount; ++processorIndex) {
                 int bitSetIndex = (strategies[processorIndex].getMapper()
                         .apply(elements.get(elementIndex)) - offset) * processorsCount + processorIndex;

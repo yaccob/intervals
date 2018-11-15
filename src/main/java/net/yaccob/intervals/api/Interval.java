@@ -34,7 +34,8 @@ public final class Interval<T extends Comparable<T>> implements Comparable<Inter
     }
 
     public boolean overlapsWith(Interval<T> other) {
-        return this.upperBoundExclusive.compareTo(other.lowerBoundInclusive) >= 0;
+        return this.upperBoundExclusive.compareTo(other.lowerBoundInclusive) >= 0
+                && other.upperBoundExclusive.compareTo(this.lowerBoundInclusive) >= 0;
     }
 
     public Interval<T> mergeWith(Interval<T> other) {
