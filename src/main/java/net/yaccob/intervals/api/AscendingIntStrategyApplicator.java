@@ -4,7 +4,6 @@ import java.util.BitSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.IntStream;
 
 public class AscendingIntStrategyApplicator {
     /**
@@ -20,7 +19,6 @@ public class AscendingIntStrategyApplicator {
      * @param strategies List of strategies to be applied (mapper + processor)
      * @param <T>        Type of elements being processed
      */
-    @SuppressWarnings("CodeBlock2Expr")
     @SafeVarargs
     public static <T> void apply(List<T> elements, IntStrategy<T>... strategies) {
         int processorsCount = strategies.length;
@@ -34,16 +32,18 @@ public class AscendingIntStrategyApplicator {
             }
         }
         final int offset = lowestIndex;
-        IntStream.range(0, elements.size()).forEach(element -> {
-            IntStream.range(0, processorsCount).forEach(i -> {
-                int index = (strategies[i].getMapper().apply(elements.get(element)) - offset) * processorsCount + i;
-                bitSet.set(index);
-                positions.put(index, positions.getOrDefault(index, 0) + 1);
-            });
-        });
-        for (int bitPosition = bitSet.nextSetBit(0); bitPosition >= 0; bitPosition = bitSet.nextSetBit(bitPosition + 1)) {
-            for (int i = 0; i < positions.get(bitPosition); ++i) {
-                strategies[bitPosition % processorsCount].getProcessor().accept(bitPosition / processorsCount + offset);
+        int bound = elements.size();
+        for (int elementIndex = 0; elementIndex < bound; ++elementIndex) {
+            for (int processorIndex = 0; processorIndex < processorsCount; ++processorIndex) {
+                int bitSetIndex = (strategies[processorIndex].getMapper()
+                        .apply(elements.get(elementIndex)) - offset) * processorsCount + processorIndex;
+                bitSet.set(bitSetIndex);
+                positions.put(bitSetIndex, positions.getOrDefault(bitSetIndex, 0) + 1);
+            }
+        }
+        for (int bitSetIndex = bitSet.nextSetBit(0); bitSetIndex >= 0; bitSetIndex = bitSet.nextSetBit(bitSetIndex + 1)) {
+            for (int occurrenceCounter = 0; occurrenceCounter < positions.get(bitSetIndex); ++occurrenceCounter) {
+                strategies[bitSetIndex % processorsCount].getProcessor().accept(bitSetIndex / processorsCount + offset);
             }
         }
     }
