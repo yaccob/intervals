@@ -82,6 +82,11 @@ public class MergerTestBase {
                         Arrays.asList(new Integer[][]{{0, 9}})
                 ),
                 new Scenario(
+                        "moderate range",
+                        Arrays.asList(new Integer[][]{{-10000, 10000}, {-3, 30000}}),
+                        Arrays.asList(new Integer[][]{{-10000, 30000}})
+                ),
+                new Scenario(
                         "big range",
                         Arrays.asList(new Integer[][]{{-1000000, 1000000}, {-3, 3000000}}),
                         Arrays.asList(new Integer[][]{{-1000000, 3000000}})

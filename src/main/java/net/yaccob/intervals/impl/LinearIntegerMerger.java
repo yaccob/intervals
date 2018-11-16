@@ -1,12 +1,9 @@
 package net.yaccob.intervals.impl;
 
-import net.yaccob.intervals.api.AscendingIntStrategyApplicator;
-import net.yaccob.intervals.api.IntStrategy;
 import net.yaccob.intervals.api.Interval;
 
 import java.util.ArrayList;
-import java.util.Deque;
-import java.util.LinkedList;
+import java.util.BitSet;
 import java.util.List;
 
 /**
@@ -18,20 +15,34 @@ public class LinearIntegerMerger implements net.yaccob.intervals.api.IntervalMer
 
     @Override
     public List<Interval<Integer>> merge(List<Interval<Integer>> intervals) {
+        BitSet bitSet = new BitSet();
+        int offset = intervals.stream()
+                .map(interval -> interval.getLowerBoundInclusive())
+                .min(Integer::compareTo)
+                .orElse(Integer.MAX_VALUE);
+        intervals.forEach(interval -> {
+            bitSet.set(interval.getLowerBoundInclusive() - offset, interval.getUpperBoundExclusive() - offset);
+        });
+        return buildResult(bitSet, offset);
+    }
 
-        Deque<Integer> lowerBoundsStack = new LinkedList<>();
+    private List<Interval<Integer>> buildResult(BitSet bitSet, int offset) {
         List<Interval<Integer>> result = new ArrayList<>();
-
-        AscendingIntStrategyApplicator.apply(intervals,
-                new IntStrategy<Interval<Integer>>(Interval::getLowerBoundInclusive, lowerBoundsStack::push),
-                new IntStrategy<Interval<Integer>>(Interval::getUpperBoundExclusive, pos -> {
-                    int lower = lowerBoundsStack.pop();
-                    if (lowerBoundsStack.isEmpty()) {
-                        result.add(new Interval<>(lower, pos));
-                    }
-                })
-        );
-
+        final int bitSetLength = bitSet.length();
+        int lastLowerBound = 0;
+        boolean isInInterval = false;
+        for (int i = 0; i < bitSetLength + 1; ++i) {
+            final boolean isBitSet = bitSet.get(i);
+            if (!isInInterval && isBitSet) {
+                if (isBitSet) {
+                    isInInterval = true;
+                    lastLowerBound = i;
+                }
+            } else if (isInInterval && !isBitSet) {
+                isInInterval = false;
+                result.add(new Interval<>(lastLowerBound + offset, i + offset));
+            } // else no action required
+        }
         return result;
     }
 
