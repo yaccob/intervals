@@ -2,7 +2,6 @@ package net.yaccob.intervals.impl;
 
 import net.yaccob.intervals.api.Interval;
 import net.yaccob.intervals.api.IntervalMerger;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -16,18 +15,9 @@ import java.util.List;
 @RunWith(Parameterized.class)
 public class IntervalMergerPerformanceComparison {
 
-    final static List<Interval<Integer>> bigIntervalsBigGaps = new ArrayList<>();
-    final static List<Interval<Integer>> bigIntervalsSmallGaps = new ArrayList<>();
-    final static List<Interval<Integer>> smallIntervalsBigGaps = new ArrayList<>();
-    final static List<Interval<Integer>> smallIntervalsSmallGaps = new ArrayList<>();
-
-    final static int RANGE = 100000;
+    private final static int RANGE = 100000;
     @Parameter
     public Scenario scenario;
-
-    @BeforeClass
-    public static void init() {
-    }
 
     @Parameters(name = "{index}: {0}")
     public static Iterable<Scenario> scenarios() {
@@ -59,7 +49,7 @@ public class IntervalMergerPerformanceComparison {
     private void repeatTestFor(String name, IntervalMerger<Integer> merger) {
         long startTime = System.currentTimeMillis();
         for (int i = 0; i < 100; ++i) {
-            merger.merge(scenario.getList());
+            merger.merge(scenario.list);
         }
         final long endTime = System.currentTimeMillis() - startTime;
         System.out.println(String.format("%-24s (%4dms) %s", name, endTime, scenario));
@@ -72,18 +62,14 @@ public class IntervalMergerPerformanceComparison {
         private final int intervalSize;
         private final int gapSize;
 
-        public Scenario(String name, int intervalSize, int gapSize) {
+        private Scenario(String name, int intervalSize, int gapSize) {
             this.name = name;
-            this.list = new ArrayList<Interval<Integer>>();
+            this.list = new ArrayList<>();
             for (int i = 0; i <= RANGE - intervalSize - gapSize + 1; i += intervalSize + gapSize) {
-                list.add(new Interval<Integer>(i, i + intervalSize));
+                list.add(new Interval<>(i, i + intervalSize));
             }
             this.intervalSize = intervalSize;
             this.gapSize = gapSize;
-        }
-
-        public List<Interval<Integer>> getList() {
-            return list;
         }
 
         @Override

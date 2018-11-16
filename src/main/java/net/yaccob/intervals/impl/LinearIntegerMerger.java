@@ -17,12 +17,10 @@ public class LinearIntegerMerger implements net.yaccob.intervals.api.IntervalMer
     public List<Interval<Integer>> merge(List<Interval<Integer>> intervals) {
         BitSet bitSet = new BitSet();
         int offset = intervals.stream()
-                .map(interval -> interval.getLowerBoundInclusive())
+                .map(Interval::getLowerBoundInclusive)
                 .min(Integer::compareTo)
                 .orElse(Integer.MAX_VALUE);
-        intervals.forEach(interval -> {
-            bitSet.set(interval.getLowerBoundInclusive() - offset, interval.getUpperBoundExclusive() - offset);
-        });
+        intervals.forEach(interval -> bitSet.set(interval.getLowerBoundInclusive() - offset, interval.getUpperBoundExclusive() - offset));
         return buildResult(bitSet, offset);
     }
 
@@ -34,10 +32,8 @@ public class LinearIntegerMerger implements net.yaccob.intervals.api.IntervalMer
         for (int i = 0; i < bitSetLength + 1; ++i) {
             final boolean isBitSet = bitSet.get(i);
             if (!isInInterval && isBitSet) {
-                if (isBitSet) {
-                    isInInterval = true;
-                    lastLowerBound = i;
-                }
+                isInInterval = true;
+                lastLowerBound = i;
             } else if (isInInterval && !isBitSet) {
                 isInInterval = false;
                 result.add(new Interval<>(lastLowerBound + offset, i + offset));
