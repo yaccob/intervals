@@ -21,7 +21,7 @@ public class IntervalMergerPerformanceComparison {
     final static List<Interval<Integer>> smallIntervalsBigGaps = new ArrayList<>();
     final static List<Interval<Integer>> smallIntervalsSmallGaps = new ArrayList<>();
 
-    final static int RANGE = 1000000;
+    final static int RANGE = 100000;
     @Parameter
     public Scenario scenario;
 
@@ -32,32 +32,37 @@ public class IntervalMergerPerformanceComparison {
     @Parameters(name = "{index}: {0}")
     public static Iterable<Scenario> scenarios() {
         return Arrays.asList(
-                new Scenario("bigIntervalsBigGaps", 100000, 100000),
-                new Scenario("bigIntervalsSmallGaps", 99990, 10),
-                new Scenario("smallIntervalsBigGaps", 10, 99990),
-                new Scenario("smallIntervalsSmallGaps", 6, 4));
+                new Scenario("bigIntervalsBigGaps", RANGE / 10, RANGE / 10),
+                new Scenario("bigIntervalsSmallGaps", RANGE / 10 - 10, 10),
+                new Scenario("smallIntervalsBigGaps", 10, RANGE / 10 - 10),
+                new Scenario("smallIntervalsSmallGaps", 60, 40),
+                new Scenario("smallerIntervalsSmallerGaps", 6, 4),
+                new Scenario("smallestIntervalsSmallestGaps", 2, 1)
+        );
     }
 
     @Test
     public void simpleMerger() {
-        repeatTestFor(new SimpleMerger<>());
+        repeatTestFor("simpleMerger", new SimpleMerger<>());
     }
 
     @Test
     public void linearInteger() {
-        repeatTestFor(new LinearIntegerMerger());
+        repeatTestFor("linearInteger", new LinearIntegerMerger());
     }
 
     @Test
     public void complexLinearInteger() {
-        repeatTestFor(new ComplexLinearMerger());
+        repeatTestFor("complexLinearInteger", new ComplexLinearMerger());
     }
 
-    private void repeatTestFor(IntervalMerger<Integer> merger) {
-        System.out.println(scenario);
+    private void repeatTestFor(String name, IntervalMerger<Integer> merger) {
+        long startTime = System.currentTimeMillis();
         for (int i = 0; i < 100; ++i) {
             merger.merge(scenario.getList());
         }
+        final long endTime = System.currentTimeMillis() - startTime;
+        System.out.println(String.format("%-24s (%4dms) %s", name, endTime, scenario));
     }
 
     private static class Scenario {
@@ -85,7 +90,7 @@ public class IntervalMergerPerformanceComparison {
         public String toString() {
             final double coverage = (double) intervalSize / (intervalSize + gapSize);
             final double ratio = (double) list.size() / RANGE / coverage;
-            return String.format("%-24s valueCoverage: %5.2f%%, intervals/valueCoverage: %6.3f%% (intervalSize: %8d, gapSize: %8d)",
+            return String.format("%-30s valueCoverage: %5.2f%%, intervals/valueCoverage: %6.3f%% (intervalSize: %8d, gapSize: %8d)",
                     name, coverage * 100, ratio * 100, intervalSize, gapSize);
         }
     }
